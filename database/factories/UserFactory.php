@@ -22,15 +22,26 @@ class UserFactory extends Factory
      * @return array<string, mixed>
      */
     public function definition(): array
-    {
-        return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
-            'remember_token' => Str::random(10),
-        ];
-    }
+{
+    return [
+        'first_name' => fake()->firstName(),
+        'last_name'  => fake()->lastName(),
+        'email'      => fake()->unique()->safeEmail(),
+        'phone'      => fake()->numerify('70######'),
+        'role'       => 'WORKER',
+        'status'     => 'PENDING',
+        'email_verified_at' => now(),
+        'password'   => static::$password ??= Hash::make('password'),
+        'remember_token' => Str::random(10),
+    ];
+}
+public function worker(): static { return $this->state(fn() => ['role' => 'WORKER']); }
+public function employee(): static { return $this->state(fn() => ['role' => 'EMPLOYEE']); }
+public function admin(): static { return $this->state(fn() => ['role' => 'ADMIN']); }
+
+public function active(): static { return $this->state(fn() => ['status' => 'ACTIVE']); }
+public function suspended(): static { return $this->state(fn() => ['status' => 'SUSPENDED']); }
+
 
     /**
      * Indicate that the model's email address should be unverified.

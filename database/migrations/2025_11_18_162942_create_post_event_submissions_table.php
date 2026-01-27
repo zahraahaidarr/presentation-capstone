@@ -10,15 +10,20 @@ return new class extends Migration {
         Schema::create('post_event_submissions', function (Blueprint $table) {
             $table->bigIncrements('id');
 
-            // Reservation (one worker, one event, one role)
-            $table->foreignId('worker_reservation_id')
-                ->constrained('worker_reservations')
-                ->cascadeOnDelete();
+            $table->unsignedBigInteger('worker_reservation_id');
+$table->foreign('worker_reservation_id')
+      ->references('reservation_id')
+      ->on('workers_reservations')
+      ->cascadeOnDelete();
+
 
             // Denormalized for easier queries
-            $table->foreignId('event_id')
-                ->constrained('events')
-                ->cascadeOnDelete();
+            $table->unsignedBigInteger('event_id');
+$table->foreign('event_id')
+      ->references('event_id')
+      ->on('events')
+      ->cascadeOnDelete();
+
 
             // Workers table uses worker_id as PK
             $table->unsignedBigInteger('worker_id');
@@ -28,8 +33,8 @@ return new class extends Migration {
                 ->cascadeOnDelete();
 
             $table->foreignId('work_role_id')
-                ->constrained('work_roles')
-                ->cascadeOnDelete();
+      ->constrained('work_roles', 'role_id')
+      ->cascadeOnDelete();
 
             // 'organizer', 'civil', 'media', 'tech', 'cleaner', 'decorator', 'cooking', 'waiter'
             $table->string('role_slug', 50);
