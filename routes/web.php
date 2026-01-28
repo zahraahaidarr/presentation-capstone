@@ -31,6 +31,7 @@ use App\Http\Controllers\Employee\ContentController;
 use App\Http\Controllers\Social\LikeController;
 use App\Http\Controllers\Social\CommentController;
 use App\Http\Controllers\Worker\FeedCommentController;
+use App\Http\Controllers\Admin\RejectedContentController;
 
 
 Route::post('/ai/staffing', [EventStaffingController::class, 'predictRoles']);
@@ -69,7 +70,17 @@ Route::get('/register', [RegisteredUserController::class, 'create'])->name('regi
         Route::get('/admin/taxonomies-venues/venues',[TaxonomiesVenuesController::class,'venuesIndex'])->name('taxonomies-venues.venues.index');
         Route::post('/admin/taxonomies-venues/venues',[TaxonomiesVenuesController::class,'venuesStore'])->name('taxonomies-venues.venues.store');
         Route::delete('/admin/taxonomies-venues/venues/{venue}',[TaxonomiesVenuesController::class,'venuesDestroy'])->name('taxonomies-venues.venues.destroy');
-        
+        Route::get('/admin/rejected-content', [RejectedContentController::class, 'index'])
+        ->name('admin.rejected-content.index');
+
+    Route::post('/admin/rejected-content/{rejected}/approve', [RejectedContentController::class, 'approve'])
+        ->name('admin.rejected-content.approve');
+
+    Route::post('/admin/rejected-content/{rejected}/reject', [RejectedContentController::class, 'reject'])
+        ->name('admin.rejected-content.reject');
+
+
+
     });
 
 

@@ -13,6 +13,7 @@ use App\Models\EmployeeReel;
 use App\Models\EmployeeStory;
 use App\Models\Comment;
 use App\Services\AiEventGuard;
+use App\Models\RejectedContent;
 
 use App\Models\Event;
 use App\Models\Employee;
@@ -192,12 +193,16 @@ class ContentController extends Controller
         }
 
         if (!($result['related'] ?? false) || empty($result['category_id'])) {
-            if ($tempPath) Storage::disk('public')->delete($tempPath);
 
-            return back()->withErrors([
-                'media' => 'Your photo is not related to the events category we have.',
-            ])->withInput();
-        }
+    // Save in rejected_contents (and move media to rejected folder)
+    $this->saveRejected('post', $userId, [
+        'event_id' => $data['event_id'],
+        'content'  => $data['content'],
+    ], $tempPath, $result);
+
+    return back()->with('warning', 'Your post was sent to Admin review (not published).');
+}
+
 
         $finalPath = null;
         if ($tempPath) {
@@ -238,12 +243,14 @@ $eventTitle = Event::where('event_id', $data['event_id'])->value('title');
         }
 
         if (!($result['related'] ?? false) || empty($result['category_id'])) {
-            Storage::disk('public')->delete($tempVideo);
 
-            return back()->withErrors([
-                'video' => 'Your video is not related to the events category we have.',
-            ])->withInput();
-        }
+    $this->saveRejected('reel', $userId, [
+        'caption' => $data['caption'] ?? null,
+    ], $tempVideo, $result);
+
+    return back()->with('warning', 'Your reel was sent to Admin review (not published).')->withInput();
+}
+
 
         $finalPath = str_replace('temp/employee_reels', 'employee_reels', $tempVideo);
         Storage::disk('public')->move($tempVideo, $finalPath);
@@ -291,12 +298,12 @@ $eventTitle = Event::where('event_id', $data['event_id'])->value('title');
         }
 
         if (!($result['related'] ?? false) || empty($result['category_id'])) {
-            Storage::disk('public')->delete($tempPath);
 
-            return back()->withErrors([
-                'media' => 'Your photo is not related to the events category we have.',
-            ]);
-        }
+    $this->saveRejected('story', $userId, [], $tempPath, $result);
+
+    return back()->with('warning', 'Your story was sent to Admin review (not published).');
+}
+
 
         $finalPath = str_replace('temp/employee_stories', 'employee_stories', $tempPath);
         Storage::disk('public')->move($tempPath, $finalPath);
@@ -374,4 +381,47 @@ $eventTitle = Event::where('event_id', $data['event_id'])->value('title');
             abort(403, 'Unauthorized');
         }
     }
+    private function saveRejected(
+    string $contentType,
+    int $employeeUserId,
+    array $payload,
+    ?string $tempPath,
+    array $aiResult
+): RejectedContent {
+    // Move media to a permanent "rejected" folder (so it won’t disappear)
+    $finalRejectedPath = null;
+
+    if ($tempPath) {
+        $folder = match ($contentType) {
+            'post'  => 'rejected/employee_posts',
+            'reel'  => 'rejected/employee_reels',
+            'story' => 'rejected/employee_stories',
+            default => 'rejected/misc',
+        };
+
+        // temp/... -> rejected/...
+        $fileName = basename($tempPath);
+        $finalRejectedPath = $folder . '/' . $fileName;
+
+        Storage::disk('public')->move($tempPath, $finalRejectedPath);
+    }
+
+    return RejectedContent::create([
+        'employee_user_id' => $employeeUserId,
+        'content_type'     => $contentType,
+
+        'event_id'         => $payload['event_id'] ?? null,
+        'content'          => $payload['content'] ?? null,
+        'caption'          => $payload['caption'] ?? null,
+        'media_path'       => $finalRejectedPath,
+
+        'ai_related'       => (bool)($aiResult['related'] ?? false),
+        'ai_category_id'   => $aiResult['category_id'] ?? null,
+        'ai_reason'        => $aiResult['reason'] ?? null,
+        'ai_raw'           => $aiResult,
+
+        'review_status'    => 'pending',
+    ]);
+}
+
 }

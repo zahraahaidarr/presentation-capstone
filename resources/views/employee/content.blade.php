@@ -107,21 +107,19 @@
       </div>
     </div>
 
-    {{-- Flash messages still fine --}}
-    @if(session('ok'))
-      <div class="notice success">{{ session('ok') }}</div>
-    @endif
+    {{-- Flash messages --}}
+@if(session('ok'))
+  <div class="notice success">{{ session('ok') }}</div>
+@endif
 
-    @if($errors->any())
-      <div class="notice danger">
-        <strong>Fix these errors:</strong>
-        <ul>
-          @foreach($errors->all() as $e)
-            <li>{{ $e }}</li>
-          @endforeach
-        </ul>
-      </div>
-    @endif
+@if(session('warning'))
+  <div class="notice warning">{{ session('warning') }}</div>
+@endif
+
+@if(session('error'))
+  <div class="notice danger">{{ session('error') }}</div>
+@endif
+
 
     <div class="card">
       <nav class="tabs">

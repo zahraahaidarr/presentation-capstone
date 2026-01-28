@@ -564,3 +564,8 @@ input:focus, textarea:focus, select:focus{
 .cName{ font-weight:700; }
 .cDate{ opacity:.7; font-size:12px; }
 .cText{ opacity:.95; }
+.notice.warning{
+  background: rgba(220, 53, 69, 0.15); /* transparent red */
+  color: #f8d7da;                      /* soft red text */
+  border: 1px solid rgba(220, 53, 69, 0.4);
+}
