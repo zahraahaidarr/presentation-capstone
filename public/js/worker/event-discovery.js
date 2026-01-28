@@ -176,6 +176,7 @@ function applyFilters(page = 1) {
             .then(json => {
                 events = Array.isArray(json.data) ? json.data : [];
                 filteredEvents = [...events];
+                buildUniqueLocations();
                 applyDateFilterInFront(dateRange);
                 renderEvents(getCurrentView());
                 updateActiveFilters({ category, location, availability });
@@ -420,6 +421,32 @@ function applyToEvent() {
         });
 }
 
+function buildUniqueLocations() {
+  const locationSel = document.getElementById('locationFilter');
+  if (!locationSel) return;
+
+  // keep the first option (All Locations)
+  const firstOption = locationSel.options[0];
+  locationSel.innerHTML = '';
+  locationSel.appendChild(firstOption);
+
+  const seen = new Set();
+
+  events.forEach(ev => {
+    const loc = (ev.location || '').trim().replace(/\s+/g, ' ');
+    if (!loc) return;
+
+    const key = loc.toLowerCase();
+    if (seen.has(key)) return; // ✅ already added
+
+    const opt = document.createElement('option');
+    opt.value = loc;
+    opt.textContent = loc;
+    locationSel.appendChild(opt);
+
+    seen.add(key);
+  });
+}
 
 
 /* ========= Theme & Language ========= */
@@ -466,6 +493,7 @@ function setView(view) {
 /* ========= Init ========= */
 
 document.addEventListener('DOMContentLoaded', () => {
+    buildUniqueLocations();
     renderEvents('grid');
     updatePagination(1, 1);
 

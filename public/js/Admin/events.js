@@ -54,6 +54,19 @@ function renderEvents() {
     const statusLabel = statusKey.charAt(0).toUpperCase() + statusKey.slice(1);
     const statusClass = `status-${statusKey}`;
 
+     const isCompleted = statusRaw === 'COMPLETED';
+
+    const actionsHtml = isCompleted
+      ? `<span class="muted">—</span>`
+      : `
+        <div class="action-buttons">
+          <button class="btn btn-secondary btn-sm" data-edit="${event.id}">Edit</button>
+          <button class="btn btn-success btn-sm" data-status="PUBLISHED" data-id="${event.id}">Publish</button>
+          <button class="btn btn-danger btn-sm" data-status="CANCELLED" data-id="${event.id}">Cancel</button>
+          <button class="btn btn-light btn-sm" data-status="DRAFT" data-id="${event.id}">Set as Draft</button>
+        </div>
+      `;
+
     return `
       <tr>
         <td class="event-title-cell">${event.title}</td>
@@ -62,14 +75,7 @@ function renderEvents() {
         <td>${event.location || ''}</td>
         <td>${event.applicants || 0} / ${event.totalSpots || 0}</td>
         <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
-        <td>
-          <div class="action-buttons">
-            <button class="btn btn-secondary btn-sm" data-edit="${event.id}">Edit</button>
-            <button class="btn btn-success btn-sm" data-status="PUBLISHED" data-id="${event.id}">Publish</button>
-            <button class="btn btn-danger btn-sm" data-status="CANCELLED" data-id="${event.id}">Cancel</button>
-            <button class="btn btn-light btn-sm" data-status="DRAFT" data-id="${event.id}">Set as Draft</button>
-          </div>
-        </td>
+        <td>${actionsHtml}</td>
       </tr>`;
   }).join('');
 }

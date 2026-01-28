@@ -72,13 +72,13 @@ $avgWorkerRating = $avgWorkerRating !== null ? round($avgWorkerRating, 2) : null
         $types = EventCategory::query()->orderBy('name')->get();
         $roleTypes = RoleType::query()->orderBy('name')->get();
 
-        $locations = Event::query()
-            ->where('status', 'PUBLISHED')
-            ->whereNotNull('location')
-            ->where('location', '!=', '')
-            ->distinct()
-            ->orderBy('location')
-            ->pluck('location');
+       $locations = Event::query()
+    ->whereNotNull('location')
+    ->select('location')
+    ->distinct()
+    ->orderBy('location')
+    ->pluck('location');
+
 
         // request filters
         $q          = trim((string) $request->get('q', ''));

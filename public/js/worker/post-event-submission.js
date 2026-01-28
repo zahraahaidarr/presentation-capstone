@@ -105,7 +105,7 @@ function populateEventsFromJson() {
 
   items.forEach(item => {
     const opt = document.createElement('option');
-    opt.value = item.reservation_id;
+    opt.value = String(item.reservation_id);
     opt.dataset.roleSlug = item.role_slug;
     opt.dataset.roleName = item.role_label;
 
@@ -776,9 +776,12 @@ function bindActions(){
     if (submissionIdInp) submissionIdInp.value = subId || '';
 
     // Select event & role
-    if (eventSelect && resId) {
-      eventSelect.value = resId;
-    }
+  if (resId) {
+  const eventLabelText = card.querySelector('.card-title')?.textContent?.trim() || 'Selected Event';
+  setEventSelectValue(resId, roleSlugDb, roleSlugDb, eventLabelText);
+  applyRoleFromEvent(); // now it WILL fill role label + show correct form
+}
+
 
     currentRoleSlugDb = roleSlugDb || null;
     const domRole = ROLE_SLUG_MAP[currentRoleSlugDb] || currentRoleSlugDb;
@@ -832,6 +835,36 @@ function toast(msg){
   box.appendChild(t);
   setTimeout(()=> t.remove(), 2200);
 }
+function setEventSelectValue(resId, roleSlugDb, roleName, eventLabelText) {
+  if (!eventSelect) return false;
+
+  const target = String(resId ?? '').trim();
+  if (!target) return false;
+
+  // 1) Try to find the option by value (string-safe)
+  const opts = [...eventSelect.options];
+  const found = opts.find(o => String(o.value) === target);
+
+  if (found) {
+    eventSelect.value = target;
+    return true;
+  }
+
+  // 2) If not found, create it BUT include datasets so applyRoleFromEvent() works
+  const opt = document.createElement('option');
+  opt.value = target;
+
+  opt.dataset.roleSlug = roleSlugDb || '';
+  opt.dataset.roleName = roleName || roleSlugDb || '';
+
+  opt.textContent = eventLabelText || 'Selected Event';
+
+  eventSelect.appendChild(opt);
+  eventSelect.value = target;
+
+  return true;
+}
+
 
 // =========================
 // Init
