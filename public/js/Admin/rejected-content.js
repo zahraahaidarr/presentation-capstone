@@ -42,6 +42,11 @@
     if (x.content_type === 'reel') return x.caption || '';
     return ''; // story usually no text
   }
+  function displayUserName(x) {
+  const n = (x.user_name ?? '').toString().trim();
+  return n !== '' ? n : `User #${x.employee_user_id}`;
+}
+
 
   function mediaCell(x) {
     if (!x.media_url) return `<span class="small">No media</span>`;
@@ -66,7 +71,11 @@
     const rows = data.filter(x => {
       if (typeVal && x.content_type !== typeVal) return false;
       if (statusVal && x.review_status !== statusVal) return false;
-      if (userVal && String(x.employee_user_id) !== userVal) return false;
+if (userVal) {
+  const q = userVal.toLowerCase();
+  const name = displayUserName(x).toLowerCase();
+  if (!name.includes(q)) return false;
+}
       return true;
     });
 
@@ -75,7 +84,13 @@
       return `
         <tr>
           <td><strong>${esc(x.content_type)}</strong></td>
-          <td>#${esc(x.employee_user_id)}</td>
+        <td>
+  <div style="font-weight:700">
+${esc(displayUserName(x))}
+  </div>
+</td>
+
+
           <td>${mediaCell(x)}</td>
           <td>${esc(txt).slice(0, 120)}${txt.length > 120 ? '…' : ''}</td>
           <td>${badge(x.review_status)}</td>
@@ -124,7 +139,8 @@
   }
 
   function openPreview(x) {
-    pmSub.textContent = `Type: ${x.content_type} • User #${x.employee_user_id} • Status: ${x.review_status}`;
+    pmSub.textContent = `Type: ${x.content_type} • ${displayUserName(x)} • Status: ${x.review_status}`;
+
 
     // reset
     pmMedia.innerHTML = '';

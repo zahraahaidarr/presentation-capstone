@@ -29,4 +29,11 @@ class RejectedContent extends Model
         'ai_raw' => 'array',
         'reviewed_at' => 'datetime',
     ];
+     
+   public function employeeUser()
+{
+    return $this->belongsTo(\App\Models\User::class, 'employee_user_id', 'id');
+}
+
+
 }

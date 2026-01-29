@@ -121,8 +121,9 @@
                 </div>
 
                 <div class="filter-group">
-                    <label class="filter-label">Search (User ID)</label>
-                    <input class="filter-input" id="filterUser" placeholder="e.g. 5">
+                <label class="filter-label">Search (User Name)</label>
+<input class="filter-input" id="filterUser" placeholder="e.g. Zahraa Haidar">
+
                 </div>
             </div>
         </div>

@@ -14,35 +14,40 @@ use Illuminate\Support\Facades\Storage;
 
 class RejectedContentController extends Controller
 {
-    public function index(Request $request)
-    {
-        $items = RejectedContent::query()
-            ->orderByDesc('created_at')
-            ->get();
+public function index(Request $request)
+{
+    $items = RejectedContent::query()
+    ->with(['employeeUser:id,first_name,last_name'])
+    ->orderByDesc('created_at')
+    ->get();
 
-        // For JS rendering
-        $payload = $items->map(function ($x) {
-            return [
-                'id' => $x->id,
-                'content_type' => $x->content_type,
-                'employee_user_id' => $x->employee_user_id,
-                'event_id' => $x->event_id,
-                'content' => $x->content,
-                'caption' => $x->caption,
-                'media_path' => $x->media_path,
-                'media_url' => $x->media_path ? asset('storage/' . ltrim($x->media_path, '/')) : null,
-                'ai_related' => (bool)$x->ai_related,
-                'ai_category_id' => $x->ai_category_id,
-                'ai_reason' => $x->ai_reason,
-                'review_status' => $x->review_status,
-                'created_at' => optional($x->created_at)->format('Y-m-d H:i'),
-            ];
-        })->values();
+$payload = $items->map(function ($x) {
+    $u = $x->employeeUser;
 
-        return view('Admin.rejected-content', [
-            'rejected' => $payload,
-        ]);
-    }
+    $userName = $u ? trim(($u->first_name ?? '').' '.($u->last_name ?? '')) : '';
+    if ($userName === '') $userName = null; // important
+
+    return [
+        'id' => $x->id,
+        'content_type' => $x->content_type,
+        'employee_user_id' => $x->employee_user_id,
+        'user_name' => $userName, // ✅ this must be sent
+        'content' => $x->content,
+        'caption' => $x->caption,
+        'media_url' => $x->media_path ? asset('storage/' . ltrim($x->media_path, '/')) : null,
+        'review_status' => $x->review_status,
+        'ai_related' => (bool)$x->ai_related,
+        'ai_category_id' => $x->ai_category_id,
+        'ai_reason' => $x->ai_reason,
+        'created_at' => optional($x->created_at)->format('Y-m-d H:i'),
+    ];
+})->values();
+
+
+    return view('Admin.rejected-content', [
+        'rejected' => $payload,
+    ]);
+}
 
     public function approve(Request $request, RejectedContent $rejected)
     {
