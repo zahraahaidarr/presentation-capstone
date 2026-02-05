@@ -174,14 +174,16 @@ function applyFilters(page = 1) {
         })
             .then(res => res.json())
             .then(json => {
-                events = Array.isArray(json.data) ? json.data : [];
-                filteredEvents = [...events];
-                buildUniqueLocations();
-                applyDateFilterInFront(dateRange);
-                renderEvents(getCurrentView());
-                updateActiveFilters({ category, location, availability });
-                updatePagination(json.current_page, json.last_page);
-            })
+    events = Array.isArray(json.data) ? json.data : [];
+    filteredEvents = [...events];
+
+    // ✅ DO NOT rebuild location options after filtering
+    applyDateFilterInFront(dateRange);
+    renderEvents(getCurrentView());
+    updateActiveFilters({ category, location, availability });
+    updatePagination(json.current_page, json.last_page);
+})
+
             .catch(err => console.error(err));
 
         return;
@@ -197,7 +199,8 @@ function applyFilters(page = 1) {
             (ev.location && ev.location.toLowerCase().includes(searchTerm.toLowerCase()));
 
         const matchesCategory = !category || String(ev.category_id) === String(category);
-        const matchesLocation = !location || (ev.location || '').toLowerCase() === location.toLowerCase();
+const norm = s => (s ?? '').toString().trim().replace(/\s+/g,' ').toLowerCase();
+const matchesLocation = !location || norm(ev.location) === norm(location);
         const matchesAvail    = !availability || ev.status === availability;
 
         return matchesSearch && matchesCategory && matchesLocation && matchesAvail;

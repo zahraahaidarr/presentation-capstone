@@ -137,7 +137,8 @@
                     <select class="filter-select" id="categoryFilter">
                         <option value="">All Categories</option>
                         @foreach($categories as $cat)
-                            <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                            <option value="{{ $cat->category_id }}">{{ $cat->name }}</option>
+
                         @endforeach
                     </select>
                 </div>

@@ -18,7 +18,7 @@ class DashboardController extends Controller
         $employeeRow = DB::table('employees')->where('user_id', $userId)->first();
         $employeeId  = $employeeRow->employee_id ?? null;
 
-        $createdByIds = $employeeId ? [$userId, $employeeId] : [$userId];
+$createdByIds = $employeeId ? [$employeeId] : [];
         // 0) Monthly chart data (last 12 months): Completed vs Not Completed
 $startMonth = $now->copy()->startOfMonth()->subMonths(11);
 $endMonth   = $now->copy()->endOfMonth();
@@ -33,13 +33,12 @@ $eventsPerMonth = DB::table('events as e')
     ->pluck('total', 'ym');
 
 // Completed events per month (distinct event_id that has COMPLETED reservation)
-$completedPerMonth = DB::table('workers_reservations as wr')
-    ->join('events as e', 'e.event_id', '=', 'wr.event_id')
+$completedPerMonth = DB::table('events as e')
     ->whereIn('e.created_by', $createdByIds)
     ->whereNotNull('e.starts_at')
     ->whereBetween('e.starts_at', [$startMonth, $endMonth])
-    ->where('wr.status', 'COMPLETED')
-    ->selectRaw("DATE_FORMAT(e.starts_at, '%Y-%m') as ym, COUNT(DISTINCT wr.event_id) as completed")
+    ->where('e.status', 'COMPLETED')
+    ->selectRaw("DATE_FORMAT(e.starts_at, '%Y-%m') as ym, COUNT(*) as completed")
     ->groupBy('ym')
     ->pluck('completed', 'ym');
 
@@ -76,12 +75,11 @@ $eventsMonthlyChart = [
 
         // 2) Completed events (from workers_reservations)
         // COUNT DISTINCT event_id that has COMPLETED reservation
-        $completedEvents = DB::table('workers_reservations as wr')
-            ->join('events as e', 'e.event_id', '=', 'wr.event_id')
-            ->whereIn('e.created_by', $createdByIds)
-            ->where('wr.status', 'COMPLETED')
-            ->distinct('wr.event_id')
-            ->count('wr.event_id');
+        $completedEvents = DB::table('events')
+    ->whereIn('created_by', $createdByIds)
+    ->where('status', 'COMPLETED')
+    ->count();
+
 
         // 3) Total Workers (volunteers + paid)
         $totalVolunteersOnly = DB::table('workers')
