@@ -32,14 +32,15 @@ class WorkerDashboardController extends Controller
         // =========================
         // KPIs
         // =========================
-        $upcomingEventsCount = WorkerReservation::query()
-            ->where('worker_id', $workerId)
-            ->whereIn('status', ['PENDING', 'RESERVED'])
-            ->whereHas('event', function ($q) use ($today, $in14) {
-                $q->whereNotNull('starts_at')
-                  ->whereBetween('starts_at', [$today->startOfDay(), $in14->endOfDay()]);
-            })
-            ->count();
+       $upcomingEventsCount = Event::query()
+    ->whereIn('status', ['PUBLISHED', 'ACTIVE'])
+    ->whereNotNull('starts_at')
+    ->whereBetween('starts_at', [
+        $today->copy()->startOfDay(),
+        $in14->copy()->endOfDay()
+    ])
+    ->count();
+
 
         $reservedCount = WorkerReservation::query()
             ->where('worker_id', $workerId)

@@ -99,6 +99,10 @@
                    class="nav-item {{ request()->routeIs('announcements.create') ? 'active' : '' }}">
                     <span class="nav-icon">📢</span><span>Send Announcement</span>
                 </a>
+                            <a href="{{ route('admin.rejected-content.index') }}"
+   class="nav-item {{ request()->routeIs('admin.rejected-content.*') ? 'active' : '' }}">
+    <span class="nav-icon">🧾</span><span>Rejected Content</span>
+</a>
             </nav>
 
             <nav class="nav-section">
